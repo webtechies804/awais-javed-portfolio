@@ -1,0 +1,125 @@
+---
+import '../styles/global.css';
+import { sanityClient } from 'sanity:client';
+import { defineQuery } from 'groq';
+
+const fallbackProjects = [
+	{
+		title: 'Numa',
+		type: 'Product launch / Web design',
+		description: 'A calmer way for independent teams to understand their numbers.',
+		image: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1400&q=85',
+		className: 'project--wide'
+	},
+	{
+		title: 'Field Notes',
+		type: 'Brand identity / Editorial',
+		description: 'A visual language for people building useful things outdoors.',
+		image: 'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1100&q=85',
+		className: 'project--tall'
+	},
+	{
+		title: 'Morrow',
+		type: 'Strategy / Digital experience',
+		description: 'Turning a complex climate platform into a story people could enter.',
+		image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1100&q=85',
+		className: 'project--tall'
+	},
+	{
+		title: 'Arc studio',
+		type: 'Identity / Art direction',
+		description: 'A confident new home for a small architecture practice.',
+		image: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1400&q=85',
+		className: 'project--wide'
+	}
+];
+
+const PROJECTS_QUERY = defineQuery(`*[_type == "project" && defined(title)] | order(order asc) {
+		title,
+		type,
+		description,
+		"image": image.asset->url
+	}`);
+
+const cmsProjects = await sanityClient.fetch(PROJECTS_QUERY);
+const projects = cmsProjects.length ? cmsProjects : fallbackProjects;
+
+const services = [
+	['01', 'Web design', 'Clear, useful websites that make a good first impression and keep earning trust after the launch.'],
+	['02', 'Brand systems', 'A flexible visual language with the type, color, and rules your team needs to stay consistent.'],
+	['03', 'Creative direction', 'A sharp point of view for launches, campaigns, and the small details people remember.']
+];
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="description" content="Awais Javed is an independent designer crafting clear digital experiences for ambitious teams." />
+		<title>Awais Javed — Designer & digital partner</title>
+	</head>
+	<body>
+		<header class="site-header">
+			<a class="wordmark" href="#top" aria-label="Awais Javed home">AJ<span>.</span></a>
+			<nav aria-label="Main navigation">
+				<a href="#work">Selected work</a>
+				<a href="#services">Capabilities</a>
+				<a class="nav-cta" href="mailto:hello@awaisjaved.design">Let's talk <span aria-hidden="true">↗</span></a>
+			</nav>
+		</header>
+
+		<main id="top">
+			<section class="hero page-shell" aria-labelledby="hero-title">
+				<div class="hero-kicker"><span class="status-dot"></span> Independent designer · Pakistan / Worldwide</div>
+				<h1 id="hero-title">Digital work with a point <em>of view.</em></h1>
+				<div class="hero-bottom">
+					<p class="hero-intro">I help founders and teams turn good ideas into clear, memorable brands and digital experiences.</p>
+					<a class="round-link" href="#work" aria-label="Scroll to selected work"><span>↓</span></a>
+				</div>
+			</section>
+
+			<section class="signal-band" aria-label="Introduction">
+				<div class="page-shell signal-grid">
+					<p class="eyebrow">A little context</p>
+					<p class="signal-copy">The best work finds the simplest honest thing to say, then gives it enough character to be impossible to forget.</p>
+				</div>
+			</section>
+
+			<section class="work page-shell" id="work" aria-labelledby="work-title">
+				<div class="section-heading">
+					<p class="eyebrow">Selected work</p>
+					<h2 id="work-title">A few things<br /><em>worth sharing.</em></h2>
+				</div>
+				<div class="projects">
+					{projects.map((project, index) => (
+						<a class={`project ${project.className}`} href={`#project-${index + 1}`}>
+							<div class="project-image"><img src={project.image} alt={`${project.title} project preview`} loading={index > 1 ? 'lazy' : 'eager'} /></div>
+							<div class="project-meta"><div><h3>{project.title}</h3><p>{project.type}</p></div><span class="project-arrow" aria-hidden="true">↗</span></div>
+							<p class="project-description">{project.description}</p>
+						</a>
+					))}
+				</div>
+			</section>
+
+			<section class="services page-shell" id="services" aria-labelledby="services-title">
+				<div class="section-heading section-heading--services"><p class="eyebrow">How I help</p><h2 id="services-title">Good design should<br /><em>make things clearer.</em></h2></div>
+				<div class="service-list">
+					{services.map(([number, title, description]) => (
+						<article class="service"><span class="service-number">{number}</span><h3>{title}</h3><p>{description}</p><span class="service-mark" aria-hidden="true">↗</span></article>
+					))}
+				</div>
+			</section>
+
+			<section class="closing page-shell" aria-labelledby="closing-title">
+				<p class="eyebrow">Have a good one?</p>
+				<h2 id="closing-title">Let's make something<br /><em>people remember.</em></h2>
+				<a class="email-link" href="mailto:hello@awaisjaved.design">hello@awaisjaved.design <span aria-hidden="true">↗</span></a>
+			</section>
+		</main>
+
+		<footer class="site-footer page-shell">
+			<span>© {new Date().getFullYear()} Awais Javed</span>
+			<div><a href="https://www.linkedin.com" rel="noreferrer">LinkedIn</a><a href="https://www.instagram.com" rel="noreferrer">Instagram</a><a href="#top">Back to top ↑</a></div>
+		</footer>
+	</body>
+</html>
