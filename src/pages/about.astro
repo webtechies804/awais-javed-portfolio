@@ -1,0 +1,16 @@
+---
+import '../styles/global.css';
+import {aboutQuery, settingsQuery} from '../lib/content';
+import {sanityClient} from 'sanity:client';
+const [about, settings] = await Promise.all([sanityClient.fetch(aboutQuery), sanityClient.fetch(settingsQuery)]);
+const email = settings?.email ?? 'hello@danielsun.space';
+---
+<html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><meta name="description" content="About Daniel Sun, web and brand designer." /><title>About Daniel Sun</title></head><body>
+	<header class="nav"><a class="logo" href="/">Daniel Sun<span>.</span></a><nav><a href="/">Works</a><a href="/about">Story</a><a class="nav-chat" href={`mailto:${email}`}>Let's chat ↗</a></nav></header>
+	<main><section class="about-hero wrap"><p class="eyebrow">About Daniel Sun</p><h1>{about?.title ?? 'I create identities and websites giving your product its own voice, the one your audience remembers.'}</h1><a class="button-link" href={`mailto:${email}`}>Start a project with me ↗</a></section>
+		<section class="about-grid wrap"><p class="eyebrow">{about?.journeyTitle ?? 'How I got here'}</p><div>{(about?.journey ?? ['Growing up in Ukraine, my design journey started with drawing. As a teen, art and graffiti sparked my passion for visual storytelling even more.', 'Right now, my wife and I are in Valencia, Spain. Here, between the sun and sea breeze, I collaborate with cross-functional tech teams and independent founders.']).map((paragraph) => <p>{paragraph}</p>)}</div></section>
+		<section class="experience"><div class="wrap"><p class="eyebrow">Experience</p><div class="experience-list">{(about?.experience ?? []).map((item) => <article><h3>{item.role}</h3><p>{item.company}</p><span>{item.dates}</span></article>)}</div></div></section>
+		<section class="about-grid wrap"><p class="eyebrow">{about?.positionTitle ?? 'Where I stand'}</p><div><p>{about?.positionBody ?? 'My mission is to make founders more competitive through design. I craft identities, websites, and visual systems that people respond to.'}</p>{about?.cvUrl && <a class="button-link" href={about.cvUrl}>Download my CV ↗</a>}</div></section>
+		<section class="closing wrap"><p class="eyebrow">{about?.closingTitle ?? 'Ready for the next adventures'}</p><h2>Let's make something<br /><i>people remember.</i></h2><a class="email" href={`mailto:${email}`}>{email} ↗</a></section>
+	</main><footer class="footer wrap"><a href="/">← Works</a><a href={`mailto:${email}`}>Let's chat ↗</a></footer>
+</body></html>
