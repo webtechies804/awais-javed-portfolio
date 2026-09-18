@@ -1,22 +1,18 @@
 ---
-import '../styles/global.css';
-import {getProject, knownSlugs, settingsQuery} from '../lib/content';
-import {sanityClient} from 'sanity:client';
-
-export async function getStaticPaths() {
-	return Promise.all(knownSlugs.map(async (slug) => ({params: {slug}, props: {project: await getProject(slug)}})));
-}
-const {project} = Astro.props;
-const settings = await sanityClient.fetch(settingsQuery);
-if (!project) return Astro.redirect('/');
-const email = settings?.email ?? 'hello@danielsun.space';
+import Site from '../layouts/Site.astro';
+import Media from '../components/Media.astro';
+import RichText from '../components/RichText.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { getSite, mediaFor } from '../lib/sanity';
+export async function getStaticPaths() { const { projects } = await getSite(); return projects.map(project => ({ params: { slug: project.slug!.current }, props: { project } })); }
+const { project } = Astro.props;
+const { media, projects } = await getSite();
+const related = project.related?.map(ref => projects.find(p => p._id === ref._ref)).filter(p => !!p) || [];
 ---
-<html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><meta name="description" content={project.summary} /><title>{project.title} | Daniel Sun</title></head><body>
-	<header class="nav"><a class="logo" href="/">Daniel Sun<span>.</span></a><nav><a href="/">Works</a><a href="/about">Story</a><a class="nav-chat" href={`mailto:${email}`}>Let's chat ↗</a></nav></header>
-	<main class="case-study"><section class="case-hero wrap"><p class="eyebrow">{project.categories.join(' · ')}</p><h1>{project.title}</h1><p class="case-summary">{project.summary}</p><div class="case-hero-image">{project.heroImage?.url && <img src={project.heroImage.url} alt={`${project.title} hero`} />}</div></section>
-		{project.sections.map((section) => <section class="case-section wrap"><p class="eyebrow">{section.heading}</p><p>{section.body}</p></section>)}
-		{project.gallery?.length ? <section class="gallery wrap">{project.gallery.map((item) => item.image?.url && <figure><img src={item.image.url} alt={item.caption ?? project.title} loading="lazy" /><figcaption>{item.caption}</figcaption></figure>)}</section> : null}
-		<section class="case-meta wrap"><div><p class="eyebrow">Services</p><p>{project.services?.join(' · ')}</p></div><div><p class="eyebrow">Tools</p><p>{project.tools?.join(' · ')}</p></div></section>
-		<section class="closing wrap"><p class="eyebrow">{project.closingLabel ?? 'Visual direction & Web design'}</p><h2>Ready for the<br /><i>next adventure?</i></h2><a class="email" href={`mailto:${email}`}>{email} ↗</a></section>
-	</main><footer class="footer wrap"><a href="/">← Back</a><a href={`mailto:${email}`}>Let's chat ↗</a></footer>
-</body></html>
+<Site title={project.seoTitle || project.title} description={project.seoDescription || project.summary} project>
+  <section class="project-hero grid-surface"><div class="project-heading"><Media media={mediaFor(media, project.icon)} width={120} alt="" eager /><h1>{project.title}</h1></div><p>{project.summary}</p></section>
+  <div class="project-lead"><Media media={mediaFor(media, project.hero)} alt={`${project.title} overview`} eager width={2000} /></div>
+  <section class="project-story"><div class="story-body"><h2>Behind the project</h2><RichText value={project.body} /></div><aside><div><h3>Services</h3><ul>{project.services?.map(service => <li>{service}</li>)}</ul></div><div><h3>Tools</h3><ul>{project.tools?.map(tool => <li>{tool}</li>)}</ul></div></aside></section>
+  <section class="case-gallery" aria-label={`${project.title} gallery`}>{project.gallery?.map(block => block._type === 'galleryHeading' ? <h2 class="section-heading">{block.title}</h2> : <div class="case-row" style={`--columns:${block.items?.length || 1}`}>{block.items?.map((ref, n) => <figure><Media media={mediaFor(media, ref)} alt={`${project.title} design detail ${n + 1}`} width={2000} /></figure>)}</div>)}</section>
+  {related.length > 0 && <section class="related-projects"><h2 class="section-heading">More selected work</h2><div class="related-grid">{related.map(project => <ProjectCard project={project} media={media} compact />)}</div></section>}
+</Site>

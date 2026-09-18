@@ -1,0 +1,8 @@
+---
+import Site from '../layouts/Site.astro';
+import Media from '../components/Media.astro';
+import { getSite, mediaFor } from '../lib/sanity';
+const { pages, media } = await getSite();
+const page = pages.find(page => page.key === 'notFound');
+---
+<Site title="Page not found" dark error><section class="error-page grid-surface"><div class="error-video"><Media media={mediaFor(media, page?.gallery?.[0])} /></div><h1>{page?.headline}</h1><p>{page?.introduction}</p><a class="chrome-button" href="/">{page?.ctaLabel}</a></section></Site>

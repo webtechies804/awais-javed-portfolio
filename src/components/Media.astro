@@ -1,0 +1,10 @@
+---
+import { imageUrl, type Media } from '../lib/sanity';
+interface Props { media?: Media | null; class?: string; alt?: string; eager?: boolean; width?: number; }
+const { media, class: className, alt, eager = false, width = 1600 } = Astro.props;
+---
+{media?.url && (media.kind === 'video' ? (
+  <video class={className} src={media.url} muted loop playsinline preload="metadata" data-preview-video aria-label={alt || 'Animated visual experiment'}></video>
+) : (
+  <img class={className} src={imageUrl(media, width)} alt={alt ?? media.alt ?? ''} width={media.width || undefined} height={media.height || undefined} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+))}

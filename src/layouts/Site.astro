@@ -1,0 +1,59 @@
+---
+import '../styles/global.css';
+import { getSite, mediaFor } from '../lib/sanity';
+import Media from '../components/Media.astro';
+interface Props { title?: string; description?: string; dark?: boolean; project?: boolean; error?: boolean; }
+const { title, description, dark = false, project = false, error = false } = Astro.props;
+const { settings, media } = await getSite();
+const path = Astro.url.pathname;
+const email = settings.email || 'info@awais-javed.com';
+const pageTitle = title || settings.seoTitle || settings.name;
+const canonical = Astro.site ? new URL(path, Astro.site).href : undefined;
+---
+<!doctype html>
+<html lang="en" class:list={{ dark }}>
+  <head>
+    <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title><meta name="description" content={description || settings.seoDescription || ''} />
+    <meta property="og:title" content={pageTitle} /><meta property="og:description" content={description || settings.seoDescription || ''} /><meta property="og:type" content="website" />
+    {canonical && <link rel="canonical" href={canonical} />}{canonical && <meta property="og:url" content={canonical} />}
+    {error && <meta name="robots" content="noindex" />}<meta name="theme-color" content={dark ? '#181818' : '#ffffff'} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preload" href="/fonts/superior-serif.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter-display.woff2" as="font" type="font/woff2" crossorigin />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class:list={['site-header', { 'project-header': project, 'error-header': error }]}><div class="header-inner">
+      {project ? <a href="/" class="chrome-button back-link"><span aria-hidden="true">‹</span> Back</a> : !error && <nav class="nav-tabs" aria-label="Main navigation"><a href="/" class:list={{ active: path === '/' }} aria-current={path === '/' ? 'page' : undefined}><span aria-hidden="true">☀</span> Works</a><a href="/about" class:list={{ active: path === '/about' }} aria-current={path === '/about' ? 'page' : undefined}><span aria-hidden="true">☾</span> Story</a></nav>}
+      {!project && <a href="/" class="wordmark">{settings.name}</a>}
+      {!error && <a href={`mailto:${email}`} class="chrome-button primary header-contact" data-contact-link>{settings.contactLabel}</a>}
+    </div></header>
+    <main id="main" class="site-frame"><slot /></main>
+    <footer class="site-frame contact-footer" id="contact">
+      <section class="contact-cell"><h2>{settings.availability}</h2><div class="email-actions"><a href={`mailto:${email}`} class="email-link" data-contact-link>{email}</a><button type="button" class="copy-email" data-copy-email={email} aria-label={`Copy email address ${email}`}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="9" width="12" height="13" rx="3"/><path d="M11 2a3 3 0 0 0-3 3v2h5a4 4 0 0 1 4 4v5h2a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3z"/></svg><span class="sr-only">Copy email</span></button></div><p class="contact-feedback" data-contact-feedback role="status" aria-live="polite"></p></section>
+      <section class="contact-cell"><h2>{settings.socialLabel}</h2><div class="social-links">{settings.socials?.map(social => <a href={social.url || '#'} target="_blank" rel="noopener noreferrer" aria-label={social.label || 'Social profile'}><Media media={mediaFor(media, dark ? social.darkIcon : social.icon)} alt="" width={80} /></a>)}</div></section>
+    </footer>
+    <dialog class="contact-dialog" aria-labelledby="contact-dialog-title" data-contact-dialog>
+      <form method="dialog"><button class="dialog-close chrome-button" aria-label="Close contact dialog">×</button></form>
+      <h2 id="contact-dialog-title">Let’s connect</h2>
+      <p>{settings.availability}</p><p class="dialog-address">{email}</p>
+      <div class="dialog-actions"><a class="chrome-button primary" href={`mailto:${email}`}>Open email ↗</a><button class="chrome-button" type="button" data-copy-email={email}>Copy email</button></div>
+      <p class="contact-feedback" data-contact-feedback role="status" aria-live="polite">Choose your mail app or copy the address.</p>
+    </dialog>
+    <script>
+      const announce = (message: string) => document.querySelectorAll<HTMLElement>('[data-contact-feedback]').forEach(status => status.textContent = message);
+      const dialog = document.querySelector<HTMLDialogElement>('[data-contact-dialog]');
+      document.querySelectorAll<HTMLAnchorElement>('[data-contact-link]').forEach(link => link.addEventListener('click', event => { if (dialog) { event.preventDefault(); dialog.showModal(); } }));
+      dialog?.addEventListener('click', event => { if (event.target === dialog) { const bounds = dialog.getBoundingClientRect(); if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close(); } });
+      document.querySelectorAll<HTMLButtonElement>('[data-copy-email]').forEach(button => button.addEventListener('click', async () => { const email = button.dataset.copyEmail || ''; try { await navigator.clipboard.writeText(email); announce('Email address copied.'); } catch { announce(`Copy this address: ${email}`); } }));
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const previews = document.querySelectorAll<HTMLVideoElement>('[data-preview-video]');
+      const observer = new IntersectionObserver(entries => entries.forEach(entry => { const video = entry.target as HTMLVideoElement; if (entry.isIntersecting && !reducedMotion.matches && !document.hidden) void video.play().catch(() => {}); else video.pause(); }), { threshold: 0.15 });
+      previews.forEach(video => observer.observe(video));
+      document.addEventListener('visibilitychange', () => { if (document.hidden) previews.forEach(video => video.pause()); });
+      document.querySelectorAll<HTMLButtonElement>('[data-gallery-direction]').forEach(button => button.addEventListener('click', () => { document.querySelector<HTMLElement>('.experiment-track')?.scrollBy({ left: Number(button.dataset.galleryDirection) * 500, behavior: reducedMotion.matches ? 'instant' : 'smooth' }); }));
+      document.querySelectorAll<HTMLButtonElement>('[data-photo-stack]').forEach(stack => stack.addEventListener('click', () => { const photos = stack.querySelectorAll<HTMLElement>('.stack-photo'); const next = (Number(stack.dataset.index || 0) + 1) % photos.length; stack.dataset.index = String(next); photos.forEach((photo, index) => photo.style.zIndex = String((index - next + photos.length) % photos.length)); }));
+    </script>
+  </body>
+</html>

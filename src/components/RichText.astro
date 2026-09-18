@@ -1,0 +1,6 @@
+---
+interface Block { _key?: string; children?: { text?: string; marks?: string[] }[]; }
+interface Props { value?: Block[] | null; }
+const { value } = Astro.props;
+---
+{value?.map(block => <p>{block.children?.map(span => span.marks?.includes('strong') ? <strong>{span.text}</strong> : span.marks?.includes('em') ? <em>{span.text}</em> : span.text)}</p>)}

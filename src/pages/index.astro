@@ -1,30 +1,15 @@
 ---
-import '../styles/global.css';
-import {getProjects, homeQuery, settingsQuery} from '../lib/content';
-import {sanityClient} from 'sanity:client';
-
-const [projects, home, settings] = await Promise.all([getProjects(), sanityClient.fetch(homeQuery), sanityClient.fetch(settingsQuery)]);
-const email = settings?.email ?? 'hello@danielsun.space';
-const title = home?.heroTitle ?? "Hey! I'm Daniel Sun, a designer who brings trusted clarity into your web and brand experiences";
-const intro = home?.heroIntro ?? '6+ years designing for tech founders. Seed to Series C, across fintech, dev tools, and Web3.';
-const services = home?.services ?? [
-	{title: 'Web design', description: 'I start from scratch, define goals the site actually has to achieve, then shape structure, navigation, and every UI element around them.'},
-	{title: 'Development', description: 'I build what I design in Framer or Webflow, down to the smallest interactions that make a site feel alive without ever pulling focus.'},
-	{title: 'Brand identity', description: 'From logo and type to colors, patterns, and graphics, delivered as one handoff your team can actually follow.'},
-	{title: 'Illustration', description: 'Custom icons, product visuals, and isometric scenes made for you only are the fastest way to explain the product and make people feel something.'}
-];
+import Site from '../layouts/Site.astro';
+import Media from '../components/Media.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { getSite, mediaFor } from '../lib/sanity';
+const { settings, pages, projects, services, media } = await getSite();
+const page = pages.find(page => page.key === 'home');
+if (!page) throw new Error('Missing homepage content');
 ---
-<html lang="en">
-	<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><meta name="description" content="Daniel Sun is a web and brand designer for SaaS and Web3 founders." /><title>Daniel Sun | Web & brand designer</title></head>
-	<body>
-		<header class="nav"><a class="logo" href="/">Daniel Sun<span>.</span></a><nav><a href="#works">Works</a><a href="/about">Story</a><a class="nav-chat" href={`mailto:${email}`}>Let's chat ↗</a></nav></header>
-		<main>
-			<section class="hero wrap"><p class="eyebrow">Web & brand designer · Valencia / Worldwide</p><h1>{title}</h1><div class="hero-foot"><p>{intro}</p><a class="circle-arrow" href="#works" aria-label="See selected work">↓</a></div></section>
-			<section class="dark-band"><div class="wrap band-grid"><p class="eyebrow">A little context</p><p>Design should give good products a voice people trust, remember, and want to tell someone else about.</p></div></section>
-			<section class="works wrap" id="works"><div class="section-top"><p class="eyebrow">Selected work</p><h2>Projects that made<br /><i>the right noise.</i></h2></div><div class="project-grid">{projects.map((project) => <a class="project-card" href={`/${project.slug}`}><div class="project-art"><img src={project.heroImage?.url} alt={`${project.title} project`} loading="lazy" /></div><div class="project-line"><div><h3>{project.title}</h3><p>{project.categories.join(' · ')}</p></div><span>↗</span></div><p class="project-summary">{project.summary}</p></a>)}</div></section>
-			<section class="services"><div class="wrap"><div class="section-top"><p class="eyebrow">Everything your product needs</p><h2>{home?.servicesTitle ?? 'To be taken seriously.'}</h2></div><div class="service-list">{services.map((service, index) => <article><span>0{index + 1}</span><h3>{service.title}</h3><p>{service.description}</p><b>↗</b></article>)}</div></div></section>
-			<section class="closing wrap"><p class="eyebrow">{home?.curiosityTitle ?? 'Pushing my limits through curiosity'}</p><h2>Currently open<br /><i>to collaborations.</i></h2><a class="email" href={`mailto:${email}`}>{email} ↗</a></section>
-		</main>
-		<footer class="footer wrap"><span>© {new Date().getFullYear()} Daniel Sun</span><div><a href="/about">Story</a><a href="#works">Works</a><a href="/">Back to top ↑</a></div></footer>
-	</body>
-</html>
+<Site>
+  <section class="hero grid-surface"><div class="hero-glow" aria-hidden="true"><Media media={mediaFor(media, page.glow)} alt="" eager /></div><div class="hero-content"><h1>{page.headline}</h1><a href={`mailto:${settings.email}`} class="chrome-button hero-cta" data-contact-link>{page.ctaLabel}<span aria-hidden="true">↗</span></a></div></section>
+  <section class="work-section" id="work" aria-label="Selected projects"><p class="work-intro">{page.introduction}</p><div class="project-columns">{[1, 2].map(column => <div class="project-column">{projects.filter(project => project.column === column).map(project => <ProjectCard project={project} media={media} />)}{column === 2 && <a class="coming-soon" href="/reward-point"><span>More to explore<br />along the way</span><span aria-hidden="true">↗</span></a>}</div>)}</div></section>
+  <section class="services-section"><h2 class="section-heading">{page.servicesHeading}</h2><div class="service-grid">{services.map(service => <article class="service-card"><div class="service-icons">{service.icons?.map(icon => <Media media={mediaFor(media, icon)} width={180} alt="" />)}</div><h3>{service.title}</h3><p>{service.description}</p></article>)}</div><div class="clients-heading">{page.clientsHeading}</div><div class="logo-grid">{page.logos?.map(logo => <div><Media media={mediaFor(media, logo)} width={260} alt="Client logo" /></div>)}</div></section>
+  <section class="experiments-section"><div class="experiments-title"><h2 class="section-heading">{page.galleryHeading}</h2><div class="gallery-controls"><button class="chrome-button" data-gallery-direction="-1" aria-label="Previous experiments">←</button><button class="chrome-button" data-gallery-direction="1" aria-label="Next experiments">→</button></div></div><div class="experiment-track" tabindex="0" aria-label="Visual experiments gallery">{page.gallery?.map((item, n) => <figure style={`--tilt:${n % 2 ? 2 : -2}deg`}><Media media={mediaFor(media, item)} alt={`Visual experiment ${n + 1}`} width={1000} /></figure>)}</div></section>
+</Site>

@@ -1,5 +1,5 @@
 {
-  "name": "awais-javed-portfolio",
+  "name": "web",
   "type": "module",
   "version": "0.0.1",
   "engines": {
@@ -12,18 +12,22 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/mdx": "^8.0.1",
     "@sanity/astro": "^3.5.1",
-    "@sanity/client": "^8.6.2",
-    "@tailwindcss/vite": "^4.3.3",
-    "astro": "^7.3.3",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
-    "react-is": "^19.3.0",
-    "sanity": "^6.14.1",
-    "styled-components": "^6.5.3",
-    "tailwindcss": "^4.3.3"
+    "@tailwindcss/vite": "^4.2.1",
+    "@types/canvas-confetti": "^1.9.0",
+    "astro": "^7.3.2",
+    "canvas-confetti": "^1.9.4",
+    "groq": "^6.14.0",
+    "tailwindcss": "^4.2.1",
+    "vite": "^8.0.13"
   },
   "allowScripts": {
     "esbuild": true
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/node": "^24.13.5",
+    "typescript": "^6.0.3"
   }
 }

@@ -1,27 +1,30 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
-import { loadEnv } from 'vite';
 
 import tailwindcss from '@tailwindcss/vite';
-
+import { defineConfig } from 'astro/config';
 import sanity from '@sanity/astro';
+import { loadEnv } from 'vite';
 
-const { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET } = loadEnv(
-  process.env.NODE_ENV ?? 'development',
-  process.cwd(),
-  ''
-);
+const env = loadEnv(process.env.NODE_ENV ?? 'development', process.cwd(), 'PUBLIC_');
 
 // https://astro.build/config
 export default defineConfig({
-  vite: {
-    plugins: [tailwindcss()]
-  },
-
-  integrations: [
-    sanity({
-      projectId: PUBLIC_SANITY_PROJECT_ID,
-      dataset: PUBLIC_SANITY_DATASET
-    })
-  ]
+	site: env.PUBLIC_SITE_URL || undefined,
+	redirects: {
+		'/projects': '/',
+		'/markdown-page': '/',
+		...Object.fromEntries(['clerk','dibsy','stimulate','caldera','reward-point','ruby','artem-astakhov'].map(slug => [`/projects/${slug}`, `/${slug}`])),
+	},
+	integrations: [
+		sanity({
+			projectId: env.PUBLIC_SANITY_PROJECT_ID || '02iqh8z6',
+			dataset: env.PUBLIC_SANITY_DATASET || 'portfolios',
+			apiVersion: '2026-09-16',
+			useCdn: false,
+			perspective: 'published',
+		}),
+	],
+	vite: {
+		plugins: [tailwindcss()],
+	},
 });

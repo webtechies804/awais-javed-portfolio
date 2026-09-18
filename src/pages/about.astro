@@ -1,16 +1,16 @@
 ---
-import '../styles/global.css';
-import {aboutQuery, settingsQuery} from '../lib/content';
-import {sanityClient} from 'sanity:client';
-const [about, settings] = await Promise.all([sanityClient.fetch(aboutQuery), sanityClient.fetch(settingsQuery)]);
-const email = settings?.email ?? 'hello@danielsun.space';
+import Site from '../layouts/Site.astro';
+import Media from '../components/Media.astro';
+import RichText from '../components/RichText.astro';
+import { getSite, mediaFor } from '../lib/sanity';
+const { settings, pages, media } = await getSite();
+const page = pages.find(page => page.key === 'about');
+if (!page) throw new Error('Missing Story page content');
+const PhotoFrame = (page.photos?.length || 0) > 1 ? 'button' : 'div';
 ---
-<html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><meta name="description" content="About Daniel Sun, web and brand designer." /><title>About Daniel Sun</title></head><body>
-	<header class="nav"><a class="logo" href="/">Daniel Sun<span>.</span></a><nav><a href="/">Works</a><a href="/about">Story</a><a class="nav-chat" href={`mailto:${email}`}>Let's chat ↗</a></nav></header>
-	<main><section class="about-hero wrap"><p class="eyebrow">About Daniel Sun</p><h1>{about?.title ?? 'I create identities and websites giving your product its own voice, the one your audience remembers.'}</h1><a class="button-link" href={`mailto:${email}`}>Start a project with me ↗</a></section>
-		<section class="about-grid wrap"><p class="eyebrow">{about?.journeyTitle ?? 'How I got here'}</p><div>{(about?.journey ?? ['Growing up in Ukraine, my design journey started with drawing. As a teen, art and graffiti sparked my passion for visual storytelling even more.', 'Right now, my wife and I are in Valencia, Spain. Here, between the sun and sea breeze, I collaborate with cross-functional tech teams and independent founders.']).map((paragraph) => <p>{paragraph}</p>)}</div></section>
-		<section class="experience"><div class="wrap"><p class="eyebrow">Experience</p><div class="experience-list">{(about?.experience ?? []).map((item) => <article><h3>{item.role}</h3><p>{item.company}</p><span>{item.dates}</span></article>)}</div></div></section>
-		<section class="about-grid wrap"><p class="eyebrow">{about?.positionTitle ?? 'Where I stand'}</p><div><p>{about?.positionBody ?? 'My mission is to make founders more competitive through design. I craft identities, websites, and visual systems that people respond to.'}</p>{about?.cvUrl && <a class="button-link" href={about.cvUrl}>Download my CV ↗</a>}</div></section>
-		<section class="closing wrap"><p class="eyebrow">{about?.closingTitle ?? 'Ready for the next adventures'}</p><h2>Let's make something<br /><i>people remember.</i></h2><a class="email" href={`mailto:${email}`}>{email} ↗</a></section>
-	</main><footer class="footer wrap"><a href="/">← Works</a><a href={`mailto:${email}`}>Let's chat ↗</a></footer>
-</body></html>
+<Site title={`Story — ${settings.name}`} dark>
+  <section class="hero grid-surface"><div class="hero-glow" aria-hidden="true"><Media media={mediaFor(media, page.glow)} eager alt="" /></div><div class="hero-content"><h1>{page.headline}</h1><a class="chrome-button hero-cta" href={`mailto:${settings.email}`} data-contact-link>{page.ctaLabel}<span aria-hidden="true">↗</span></a></div></section>
+  <section class="about-story split-grid"><div class="about-copy"><h2>{page.storyHeading}</h2><RichText value={page.story} /></div><div class="photo-stack-area"><PhotoFrame class="photo-stack" data-photo-stack={(page.photos?.length || 0) > 1 ? true : undefined} type={PhotoFrame === 'button' ? 'button' : undefined} aria-label={PhotoFrame === 'button' ? 'Cycle through personal photos' : undefined}>{page.photos?.map((photo, n) => <div class="stack-photo" style={`--rotation:${[-5, 4, -2, 3, 0][n % 5]}deg;z-index:${n}`}><Media media={mediaFor(media, photo)} width={800} alt={mediaFor(media, photo)?.alt || `Personal photograph ${n + 1}`} /></div>)}</PhotoFrame></div></section>
+  <section class="about-career split-grid"><div class="career-list">{page.career?.map(position => <article><Media media={mediaFor(media, position.icon)} alt="" width={150} /><div><h3>{position.role}</h3><p>{position.company}</p></div><time>{position.dates}</time></article>)}</div><div class="about-copy approach-copy"><h2>{page.approachHeading}</h2><RichText value={page.approach} />{page.resumeUrl && <a href={page.resumeUrl} target="_blank" rel="noopener noreferrer" class="chrome-button">↓ Download CV</a>}</div></section>
+  <section class="about-closing"><h2 class="section-heading">{page.closingHeading}</h2><div class="closing-collage">{page.collage?.map((photo,n) => <div style={`--rotation:${[-9,5,17][n % 3]}deg`}><Media media={mediaFor(media, photo)} width={700} alt={`Personal collection ${n + 1}`} /></div>)}</div></section>
+</Site>

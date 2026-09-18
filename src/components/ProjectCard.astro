@@ -1,0 +1,13 @@
+---
+import { mediaFor, type Project, type Media as MediaType } from '../lib/sanity';
+import Media from './Media.astro';
+interface Props { project: Project; media: MediaType[]; compact?: boolean; }
+const { project, media, compact = false } = Astro.props;
+---
+<a href={`/${project.slug?.current}`} class:list={['project-card', { compact }]} aria-label={`View ${project.title}`}>
+  <div class="project-card-picture" style={`aspect-ratio:${compact ? 1.5 : project.coverRatio || 1}`}>
+    <Media media={mediaFor(media, project.cover)} alt={`${project.title} project preview`} width={1200} />
+    <div class="project-tags"><span class="project-name">{project.title}</span>{project.tags?.map(tag => <span>{tag}</span>)}</div>
+    <span class="card-arrow" aria-hidden="true">↗</span>
+  </div>
+</a>
