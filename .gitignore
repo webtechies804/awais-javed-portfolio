@@ -27,3 +27,6 @@ pnpm-debug.log*
 
 .sanity/
 *.tsbuildinfo
+
+# Local Codex project instructions
+/AGENTS.md
