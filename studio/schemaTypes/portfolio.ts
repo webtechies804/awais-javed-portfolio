@@ -54,6 +54,7 @@ export const portfolioPage = defineType({
 export const portfolioProject = defineType({
   name: 'portfolioProject', title: 'Portfolio Projects', type: 'document', icon: DocumentIcon,
   fields: [defineField({name: 'title', type: 'string', validation: required}),
+    defineField({name: 'website', title: 'Live website URL', type: 'url', validation: rule => rule.uri({scheme: ['http', 'https']})}),
     defineField({name: 'slug', type: 'slug', options: {source: 'title'}, validation: rule => rule.required().custom(value => !value?.current || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.current) || 'Use lowercase words separated by hyphens')}),
     source, defineField({name: 'order', type: 'number'}), defineField({name: 'column', type: 'number', options: {list: [1, 2]}}),
     defineField({name: 'summary', type: 'text'}), richText('body'), stringList('tags'), stringList('services'), stringList('tools'),

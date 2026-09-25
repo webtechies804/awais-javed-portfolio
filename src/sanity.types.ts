@@ -36,6 +36,7 @@ export type PortfolioProject = {
   _updatedAt: string;
   _rev: string;
   title?: string;
+  website?: string;
   slug?: Slug;
   sourceUrl?: string;
   order?: number;
@@ -403,7 +404,7 @@ export type AllSanitySchemaTypes =
   | SanityImageAsset
   | Geopoint;
 
-// Source: ../web/src/lib/sanity.ts
+// Source: ../src/lib/sanity.ts
 // Variable: SITE_QUERY
 // Query: {  "settings": *[_type == "siteSettings"][0],  "pages": *[_type == "portfolioPage"],  "projects": *[_type == "portfolioProject" && defined(slug.current)] | order(order asc),  "services": *[_type == "portfolioService"] | order(order asc),  "media": *[_type == "portfolioMedia"] {    _id, title, alt, kind, aspectRatio,    "url": coalesce(image.asset->url, clip.asset->url),    "width": image.asset->metadata.dimensions.width,    "height": image.asset->metadata.dimensions.height  }}
 export type SITE_QUERY_RESULT = {
@@ -518,6 +519,7 @@ export type SITE_QUERY_RESULT = {
     _updatedAt: string;
     _rev: string;
     title?: string;
+    website?: string;
     slug?: Slug;
     sourceUrl?: string;
     order?: number;
